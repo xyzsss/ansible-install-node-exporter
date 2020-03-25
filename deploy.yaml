@@ -1,0 +1,21 @@
+- hosts: all
+  gather_facts: yes
+  vars:
+    tar_files: node_exporter-0.18.0.linux-amd64.tar.gz
+    systemd_file: nodexporter.service
+  tasks:
+    - name: untar installer files to remote hosts
+      unarchive:
+        src: "{{tar_files}}"
+        dest: "/opt"
+
+    - name: copy systemd to remote hosts
+      copy:
+        src: "{{systemd_file}}"
+        dest: "/usr/lib/systemd/system/{{systemd_file}}"
+
+    - name: enable systemd service and start service
+      systemd:
+        name: nodexporter
+        state: started
+        enabled: yes
