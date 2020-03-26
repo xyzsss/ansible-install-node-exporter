@@ -1,21 +1,48 @@
 - hosts: all
   gather_facts: yes
+  become: true
+  become_user: root
+  become_method: su
   vars:
     tar_files: node_exporter-0.18.0.linux-amd64.tar.gz
     systemd_file: nodexporter.service
+    init_file: nodexporter.init
   tasks:
     - name: untar installer files to remote hosts
       unarchive:
         src: "{{tar_files}}"
         dest: "/opt"
 
+    - name: Add the user 'nodexporter' with a nologin shell
+      user:
+        name: nodexporter
+        shell: /sbin/nologin
+        createhome: false
+        comment: node exporter account
+
     - name: copy systemd to remote hosts
       copy:
         src: "{{systemd_file}}"
         dest: "/usr/lib/systemd/system/{{systemd_file}}"
+      when: ansible_distribution == "CentOS" and ansible_distribution_major_version == '7'
 
-    - name: enable systemd service and start service
+    - name : copy init to remote hosts
+      copy:
+        src: "{{init_file}}"
+        dest: "/etc/init.d/nodexporter"
+        mode: o+x
+      when: ansible_distribution == "CentOS" and ansible_distribution_major_version == '6'
+
+    - name: enable systemd nodexporter and start service
       systemd:
         name: nodexporter
         state: started
         enabled: yes
+      when: ansible_distribution == "CentOS" and ansible_distribution_major_version == '7'
+
+    - name: enable service nodexporter and start service
+      service:
+        name: nodexporter
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS" and ansible_distribution_major_version == '6'

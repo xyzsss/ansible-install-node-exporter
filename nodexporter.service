@@ -4,8 +4,8 @@ After=network.target
 [Service]
 WorkingDirectory=/opt/node_exporter-0.18.0.linux-amd64
 ExecStart=/opt/node_exporter-0.18.0.linux-amd64/node_exporter
-User=root
-Group=root
+User=nodexporter
+Group=nodexporter
 Type=simple
 Restart=always
 RestartSec=5

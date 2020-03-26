@@ -1,0 +1,63 @@
+#!/bin/bash
+#
+# node_exporter Export statistics to be consumed by a remote Prometheus server
+#
+# chkconfig: 345 70 30
+# description: Prometheus node exporter
+# processname: node_exporter
+### BEGIN INIT INFO
+# Provides:
+# Required-Start:
+# Required-Stop:
+# Default-Start: 3 4 5
+# Default-Stop: 0 1 2 6
+### END INIT INFO
+#
+#
+#  Prometheus node exporter
+#  /etc/init.d/node_exporter
+#
+#
+# Source function library.
+. /etc/init.d/functions
+PROGNAME=node_exporter
+PROG=/opt/node_exporter-0.18.0.linux-amd64/$PROGNAME
+USER=nodexporter
+LOGFILE=/tmp/node_exporter.log
+LOCKFILE=/var/run/$PROGNAME.pid
+start() {
+    echo -n "Starting $PROGNAME: "
+    cd /opt/node_exporter-0.18.0.linux-amd64
+    daemon --user $USER --pidfile="$LOCKFILE" "$PROG &>$LOGFILE &"
+    echo $(pidofproc $PROGNAME) >$LOCKFILE
+    echo
+}
+stop() {
+    echo -n "Shutting down $PROGNAME: "
+    killproc $PROGNAME
+    rm -f $LOCKFILE
+    echo
+}
+case "$1" in
+    start)
+    start
+    ;;
+    stop)
+    stop
+    ;;
+    status)
+    status $PROGNAME
+    ;;
+    restart)
+    stop
+    start
+    ;;
+    reload)
+    echo "Sending SIGHUP to $PROGNAME"
+    kill -SIGHUP $(pidofproc $PROGNAME)#!/bin/bash
+    ;;
+    *)
+        echo "Usage: service nodexporter {start|stop|status|reload|restart}"
+        exit 1
+    ;;
+esac
