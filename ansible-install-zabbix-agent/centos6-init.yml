@@ -1,0 +1,19 @@
+- name: "copy {{agent_file_for_6}} file to remote"
+  copy:
+    src: "{{agent_file_for_6}}"
+    dest: "{{tmp_path}}"
+
+- name: "install the rpm file"
+  command: "rpm -ivh {{tmp_path}}/{{agent_file_for_6}}"
+
+- name: "replace the zabbix server info"
+  lineinfile:
+    path: /etc/zabbix/zabbix_agentd.conf
+    regexp: '^Server=127.0.0.1'
+    line: 'Server=ZABBIX_SERVER_IP'
+
+- name: "start zabbix agent service"
+  service:
+    name: zabbix-agent
+    state: started
+    enabled: yes

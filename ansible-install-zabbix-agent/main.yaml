@@ -1,0 +1,25 @@
+- hosts: all
+  gather_facts: yes
+  become: yes
+  remote_user: root
+  become_method: su
+  vars:
+    agent_file_for_6: "zabbix-agent-4.0.3-1.el6.x86_64.rpm"
+    agent_file_for_7: "zabbix-agent-4.0.3-1.el7.x86_64.rpm"
+    service_port: "10050"
+    tmp_path: /tmp
+  tasks:
+    - debug: msg="distribution:{{ansible_distribution}}"
+    - debug: msg="distribution:{{ansible_distribution_major_version}}"
+
+    - include: centos7-init.yml
+      when: ansible_distribution == "CentOS" and ansible_distribution_major_version == '7'
+
+    - include: centos6-init.yml
+      when: ansible_distribution == "CentOS" and ansible_distribution_major_version == '6'
+
+    - include: ubuntu18-init.yml
+      when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == '18'
+
+    - name: verify service port {{service_port}}
+      wait_for: port={{service_port}} timeout=5
